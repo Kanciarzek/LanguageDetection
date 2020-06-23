@@ -31,7 +31,6 @@ def save_samples(audio_sample, sr, orig_fname, dest_path, no_sample):
     out_fpath = os.path.join(dest_path, orig_fname + str(no_sample) + ext)
     sf.write(out_fpath, audio_sample, sr)
 
-# sampling_rate = {}
 
 for lang_fold in os.listdir(PATH):
     lang_path = os.path.join(PATH, lang_fold)
