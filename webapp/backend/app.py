@@ -1,21 +1,18 @@
-from flask import Flask
-from flask import jsonify
+from flask import Flask, jsonify, render_template
+
 
 app = Flask(__name__)
 app.config.from_json('flask_config.json', silent=False)
-print("dupa")
 
 
-@app.route("/upload", methods=["POST"])
+@app.route("/sound_send", methods=["POST"])
 def predict_language():
-    raw_wave = flask.requests.get_data()
-    print(raw_wave)
-    return jsonify({"outcome":"SUCCESS"}) 
+    return jsonify({"outcome": "SUCCESS"})
 
-@app.route("/", methods=["GET", "POST"])
+
+@app.route("/", methods=["GET"])
 def default_route():
-    print("tutej")
-    return jsonify({"outcome" : "FAIL"})
+    return render_template("index.html")
 
 
 if __name__ == "__main__":

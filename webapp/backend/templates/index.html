@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Super audio app</title>
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='base.css') }}">
+</head>
+<body>
+<nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+    <a class="navbar-brand" href="/">Human speech classifier</a>
+</nav>
+<main role="main" class="container">
+    <div class="jumbotron">
+        <div class="row">
+            <div class="col text-center">
+                <button id="record" class="btn btn-primary btn-lg">Record</button>
+                <button id="stop" class="btn btn-primary btn-lg" disabled>Stop</button>
+                <button id="play" class="btn btn-primary btn-lg" disabled>Play</button>
+                <button id="send" class="btn btn-primary btn-lg" disabled>Send to classifier</button>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script type="text/javascript" src="{{ url_for('static', filename='main.js') }}"></script>
+</body>
+</html>
