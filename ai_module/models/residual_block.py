@@ -4,13 +4,14 @@ class ResnetLayer(tf.keras.Model):
 
     def __init__(self, filters, kernel_size, strides = 1):
         super(ResnetLayer, self).__init__(name='')
-
+        print(filters, kernel_size, strides)
         self.channels_out = filters
-        self.conv21 = tf.keras.layers.Conv2D(filters, kernel_size, strides)
-        self.nomr1 = tf.keras.layers.BatchNormalization()
+        self.strides = strides
+        self.conv21 = tf.keras.layers.Conv2D(filters, kernel_size, strides, padding='same')
+        self.norm1 = tf.keras.layers.BatchNormalization()
 
-        self.conv22 = tf.keras.layers.Conv2D(filters, kernel_size, strides)
-        self.nomr2 = tf.keras.layers.BatchNormalization()
+        self.conv22 = tf.keras.layers.Conv2D(filters, kernel_size, strides, padding='same')
+        self.norm2 = tf.keras.layers.BatchNormalization()
 
         self.short_conv = tf.keras.layers.Conv2D(
             filters, kernel_size=1, strides=strides, padding='same')
@@ -26,14 +27,15 @@ class ResnetLayer(tf.keras.Model):
         x = self.norm2(x)
         
         channels_in = input_tensor.shape[-1]
-        if self.channels_out != channels_in or strides != 1:
+        
+        if self.channels_out != channels_in or self.strides != 1:
             res_conn = self.short_conv(input_tensor)
-            res_conn = self.batch_short(res_conn)
+            res_conn = self.batch_short(res_conn, training=training)
         else:
             res_conn = input_tensor
-            res_conn = self.batch_short(res_conn)
         
-        x = tf.keras.layers.add([shortcut, x])
+        
+        x = tf.keras.layers.add([res_conn, x])
         x = self.activ_fun(x)
 
         return x
