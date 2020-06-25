@@ -7,7 +7,7 @@ class Trainer:
         self.learning_rate = lr
         self.epochs = epochs
 
-        self.METRICS = [ tf.keras.metrics.Accurany() ]
+        self.METRICS = [ tf.keras.metrics.Accuracy() ]
 
         #TODO
         #LEARNING RATE SCHEDULAR
@@ -21,5 +21,3 @@ class Trainer:
             )
 
         history = model.fit(data_sequence, epochs=self.epochs)
-        
-

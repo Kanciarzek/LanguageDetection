@@ -4,7 +4,7 @@ class ResnetLayer(tf.keras.Model):
 
     def __init__(self, filters, kernel_size, strides = 1):
         super(ResnetLayer, self).__init__(name='')
-        print(filters, kernel_size, strides)
+
         self.channels_out = filters
         self.strides = strides
         self.conv21 = tf.keras.layers.Conv2D(filters, kernel_size, strides, padding='same')

@@ -3,7 +3,7 @@ import os
 import librosa
 import numpy as np
 from sklearn import preprocessing
-from features_maps_function import make_melspec_feature
+from .features_maps_function import make_melspec_feature
 from tensorflow.keras.utils import Sequence
 
 
@@ -38,6 +38,13 @@ class VoiceDataset(Sequence):
     def on_epoch_end(self):
         np.random.shuffle(self._indices)
 
+    def _pad_batch(self, batch):
+        to_pad_pixi = np.array([sample.shape[-2] for sample in batch]).max()
+        new_batch = np.array([np.pad(sample, ((0,0), (0, to_pad_pixi - sample.shape[-2]), (0,0))) 
+            for sample in batch
+            ])
+        return new_batch
+
     def __len__(self):
         return int(np.ceil(
             len(self.paths_to_audio) / self.batch_size))
@@ -50,14 +57,15 @@ class VoiceDataset(Sequence):
         for ind in batch_idxs:
             loaded_sample, sr = librosa.core.load(self.paths_to_audio[ind], sr=None)
             batch += [self.feature_function(loaded_sample, sr, *self.feature_args)]
-            labels += self.labels[ind]
+            labels += [self.labels[ind]]
+
+        batch = self._pad_batch(batch)
+        labels = np.concatenate(labels)
 
         return batch, labels
 
 if __name__ == "__main__":
     PATH = "/home/tskrzypczak/Desktop/dataset_voice"
     vd = VoiceDataset(PATH, make_melspec_feature, 64, (128,))
-    for i in range(len(vd)):
-        print(i)
-        vd[i]
-        print()
+    b = vd[0]
+    print(b[0].shape, b[1].shape)
