@@ -7,16 +7,17 @@ import soundfile as sf
 PATH = "/home/pgoliszewski/Desktop/dataset-voice"
 OUTPUT_PATH = "/home/tskrzypczak/Desktop/dataset_voice"
 
+SAMPLING_RATE = 44100
 
 def split_by_tsec_time(file_path, time):
-    sr_file = librosa.core.get_samplerate(au_path)
+    # sr_file = librosa.core.get_samplerate(au_path)
 
-    loaded_audio, _ = librosa.core.load(au_path, sr_file)
+    loaded_audio, _ = librosa.core.load(au_path, SAMPLING_RATE)
     no_samples = loaded_audio.shape[0] // (sr_file * time)
     leftovers = (loaded_audio.shape[0] % (sr_file * time))
 
     if leftovers > (sr_file * time / 2):
-        to_pad = sr_file * time - (loaded_audio.shape[0] % (sr_file * time))
+        to_pad = sr_file * time - (loaded_audio.shape[0] % (SAMPLING_RATE * time))
         loaded_audio = np.concatenate((loaded_audio, np.zeros(to_pad)))
     else:
         loaded_audio = loaded_audio[:-leftovers]
@@ -25,7 +26,7 @@ def split_by_tsec_time(file_path, time):
     return sr_file, samples
 
 def save_samples(audio_sample, sr, orig_fname, dest_path, no_sample):
-    ext = ".ogg"
+    ext = ".wav"
     orig_fname, _ = orig_fname.split(".")
 
     out_fpath = os.path.join(dest_path, orig_fname + str(no_sample) + ext)

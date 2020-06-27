@@ -21,5 +21,5 @@ class Trainer:
             )
 
         history = model.fit(
-            data_sequence, epochs=self.epochs, 
+            data_sequence, batch_size=1, epochs=self.epochs, 
             workers = 6, use_multiprocessing = True)

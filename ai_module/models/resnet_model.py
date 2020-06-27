@@ -18,8 +18,9 @@ class SimpleResnet(tf.keras.Model):
 
         x = self.gap(x)
         x = self.out(x)
-        
-        return self.softmax(x)
+        x = self.softmax(x)
+
+        return x
 
 if __name__ == "__main__":
 
