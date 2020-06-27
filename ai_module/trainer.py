@@ -15,9 +15,11 @@ class Trainer:
     def train(self, data_sequence, model):
 
         model.compile(
-            loss=tf.keras.losses.CategoricalCrossentropy(from_logits=False),
+            loss="sparse_categorical_crossentropy",
             optimizer=self.optim_algos,
-            metrics=self.METRICS
+            metrics=["accuracy"]
             )
 
-        history = model.fit(data_sequence, epochs=self.epochs)
+        history = model.fit(
+            data_sequence, epochs=self.epochs, 
+            workers = 6, use_multiprocessing = True)

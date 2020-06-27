@@ -1,6 +1,6 @@
 import tensorflow as tf
 
-class ResnetLayer(tf.keras.Model):
+class ResnetLayer(tf.keras.layers.Layer):
 
     def __init__(self, filters, kernel_size, strides = 1):
         super(ResnetLayer, self).__init__(name='')
@@ -17,7 +17,7 @@ class ResnetLayer(tf.keras.Model):
             filters, kernel_size=1, strides=strides, padding='same')
         self.batch_short = tf.keras.layers.BatchNormalization()
         self.activ_fun = tf.nn.relu
-
+        
     def call(self, input_tensor, training=False):
         x = self.conv21(input_tensor)
         x = self.norm1(x, training=training)

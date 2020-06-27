@@ -7,7 +7,7 @@ from trainer import Trainer
 
 
 PATH = "/home/tskrzypczak/Desktop/dataset_voice"
-voice_dataset = VoiceDataset(PATH, make_melspec_feature, 64, (128,))
+voice_dataset = VoiceDataset(PATH, make_melspec_feature, 32, (128,))
 
 res_block_args = [
     [128, 3, 1],
