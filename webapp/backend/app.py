@@ -1,13 +1,13 @@
-from flask import Flask, jsonify, render_template
-
+from flask import Flask, jsonify, render_template, make_response, request
 
 app = Flask(__name__)
 app.config.from_json('flask_config.json', silent=False)
 
 
-@app.route("/sound_send", methods=["POST"])
+@app.route("/sound_analyze", methods=["POST"])
 def predict_language():
-    return jsonify({"outcome": "SUCCESS"})
+    print(request.files)
+    return make_response(jsonify({'language': 'Spanish'}), 200)
 
 
 @app.route("/", methods=["GET"])
