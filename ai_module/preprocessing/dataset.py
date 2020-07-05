@@ -60,7 +60,6 @@ class VoiceDataset(Sequence):
             labels += [self.labels[ind]]
 
         batch = self._pad_batch(batch)
-        print(batch.shape)
         labels = np.concatenate(labels)
 
         return batch, labels

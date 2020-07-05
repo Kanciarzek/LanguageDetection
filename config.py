@@ -1,3 +1,3 @@
-dataset_config = {
-    "path" : "/home/pgoliszewski/Desktop/dataset-voice"
-}
+import glob
+
+print(glob.glob("/home/tskrzypczak/Desktop/dataset_voice/[!validation]*/*"))

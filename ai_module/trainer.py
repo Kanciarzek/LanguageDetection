@@ -12,7 +12,7 @@ class Trainer:
         #TODO
         #LEARNING RATE SCHEDULAR
 
-    def train(self, data_sequence, model):
+    def train(self, data, model, val_data):
 
         model.compile(
             loss="sparse_categorical_crossentropy",
@@ -21,5 +21,4 @@ class Trainer:
             )
 
         history = model.fit(
-            data_sequence, batch_size=1, epochs=self.epochs, 
-            workers = 6, use_multiprocessing = True)
+            data, epochs=self.epochs, validation_data = val_data)
