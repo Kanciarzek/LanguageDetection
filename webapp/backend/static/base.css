@@ -1,0 +1,15 @@
+body {
+    padding-top: 5rem;
+}
+
+#visualizer_wrapper {
+  padding-bottom: 1em;
+}
+
+.label {
+    padding-top: 1em;
+}
+
+.jumbotron {
+    padding: 2rem 1rem;
+}
