@@ -24,9 +24,16 @@
                 </div>
                 <div>
                     <button id="record" class="btn btn-primary btn-lg">Record</button>
+                    <button id="file" class="btn btn-primary btn-lg">Load file</button>
+                    <input id="file-input" type="file" name="name" style="display: none;" />
                     <button id="stop" class="btn btn-primary btn-lg" disabled>Stop</button>
                     <button id="play" class="btn btn-primary btn-lg" disabled>Play</button>
                     <button id="send" class="btn btn-primary btn-lg" disabled>Send to classifier</button>
+
+                </div>
+                <div class="label">
+                    Filename:
+                    <filename id="filename">None</filename>
                 </div>
                 <div class="label">
                     Language:

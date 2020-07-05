@@ -5,20 +5,19 @@ const recordAudio = () =>
         let audioChunks = [];
         mediaRecorder.addEventListener('dataavailable', event => {
             audioChunks.push(event.data);
-
         });
 
         const start = () => {
             audioChunks = [];
             mediaRecorder.start();
-            const analyser = Visualizer.audioContext.createAnalyser();
-            const source = Visualizer.audioContext.createMediaStreamSource(stream);
-            analyser.fftSize = 2048;
-            const bufferLength = analyser.frequencyBinCount;
-            const dataArray = new Uint8Array(bufferLength);
-            analyser.getByteTimeDomainData(dataArray);
-            source.connect(analyser);
-            Visualizer._drawSpectrum(analyser);
+            // const analyser = Visualizer.audioContext.createAnalyser();
+            // const source = Visualizer.audioContext.createMediaStreamSource(stream);
+            // analyser.fftSize = 2048;
+            // const bufferLength = analyser.frequencyBinCount;
+            // const dataArray = new Uint8Array(bufferLength);
+            // analyser.getByteTimeDomainData(dataArray);
+            // source.connect(analyser);
+            // Visualizer._drawSpectrum(analyser);
         };
 
         const stop = () =>
@@ -34,15 +33,31 @@ const recordAudio = () =>
                 mediaRecorder.stop();
             });
 
+
         resolve({start, stop});
     });
 const sleep = time => new Promise(resolve => setTimeout(resolve, time));
 
+const fromFile = () =>
+    new Promise(resolve => {
+        const audioBlob = fileInput.files[0];
+        const audioUrl = URL.createObjectURL(audioBlob);
+        const audio = new Audio(audioUrl);
+        const play = () => audio.play();
+
+        resolve({audioBlob, audioUrl, play});
+
+    });
+
+
 const recordButton = document.querySelector('#record');
+const fileButton = document.querySelector('#file')
+const fileInput = document.querySelector('#file-input')
 const stopButton = document.querySelector('#stop');
 const playButton = document.querySelector('#play');
 const sendButton = document.querySelector('#send');
 const languageLabel = document.getElementById('language')
+const filenameLabel = document.getElementById('filename')
 
 let recorder;
 let audio;
@@ -52,6 +67,9 @@ recordButton.addEventListener('click', async () => {
     stopButton.removeAttribute('disabled');
     playButton.setAttribute('disabled', true);
     sendButton.setAttribute('disabled', true);
+    fileButton.setAttribute('disabled', true);
+    fileInput.value = null;
+    filenameLabel.innerText = "None";
     if (!recorder) {
         recorder = await recordAudio();
     }
@@ -59,26 +77,41 @@ recordButton.addEventListener('click', async () => {
 });
 
 stopButton.addEventListener('click', async () => {
+    startAnalyzeMode();
+    audio = await recorder.stop();
+});
+
+function startAnalyzeMode() {
     recordButton.removeAttribute('disabled');
     stopButton.setAttribute('disabled', true);
     playButton.removeAttribute('disabled');
     playButton.removeAttribute('disabled');
     sendButton.removeAttribute('disabled');
-    audio = await recorder.stop();
-});
+    fileButton.removeAttribute('disabled');
 
+}
 
 sendButton.addEventListener('click', () => {
     let form_data = new FormData();
-    languageLabel.innerText = 'Please wait...'
+    languageLabel.innerText = 'Please wait...';
     form_data.append('audio', audio.audioBlob, 'speech.wav');
-    console.log(form_data)
+
     fetch('/sound_analyze', {method: 'POST', body: form_data, headers: {Accept: "application/json"}}).then(
         function (response) {
             response.json().then(data => languageLabel.innerText = data.language)
         });
 
 });
+
+fileButton.addEventListener('click', () => fileInput.click())
+
+fileInput.addEventListener('change', async () => {
+    let pathParts = fileInput.value.split('\\');
+    filenameLabel.innerText = pathParts[pathParts.length - 1];
+    startAnalyzeMode();
+    console.log(fileInput.files[0]);
+    audio = await fromFile();
+})
 
 recordButton.removeAttribute('disabled');
 stopButton.setAttribute('disabled', true);
@@ -92,7 +125,6 @@ window.onload = function () {
 
 playButton.addEventListener('click', () => {
     audio.play();
-
     audio.audioBlob.arrayBuffer().then(arrayBuffer => Visualizer.audioContext.decodeAudioData(arrayBuffer, (audioBuffer) => {
         Visualizer._visualize(Visualizer.audioContext, audioBuffer);
     }))
