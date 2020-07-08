@@ -10,7 +10,7 @@ def create_validation():
     os.makedirs(val_folder_path, exist_ok=True)
 
     for lang_fold in os.listdir(OUPTUT_PATH):
-        if lang_fold is not "VALID_FOLDERNAME":
+        if lang_fold is not VALID_FOLDERNAME:
             lang_path = os.path.join(OUPTUT_PATH, lang_fold)
             fnames = os.listdir(lang_path)
             
@@ -20,10 +20,11 @@ def create_validation():
             validation_fnames = fnames[:val_samples_no]
             print(len(validation_fnames))
             
-            for fname in validation_fnames:
+            for idx, fname in enumerate(validation_fnames):
+                new_name = lang_fold + "_" + str(idx) + ".wav"
                 to_move_file = os.path.join(lang_path, fname)
-                dest_path = os.path.join(val_folder_path, fname)
+                dest_path = os.path.join(val_folder_path, new_name)
+
                 os.rename(to_move_file, dest_path)
-    
 
 create_validation()

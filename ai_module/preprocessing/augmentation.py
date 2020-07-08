@@ -26,7 +26,7 @@ def mask_time(spectogram, no_time, max_width_masking):
 
     for i in range(no_time):
         width = tf.random.uniform([], minval=0, maxval = max_width_masking, dtype=tf.int32)
-        position = tf.random.uniform([], minval=0, maxval = n_mels - width, dtype=tf.int32)
+        position = tf.random.uniform([], minval=0, maxval = time - width, dtype=tf.int32)
 
         mask = tf.concat(
             [tf.ones(shape=(n_mels, position, 1)),

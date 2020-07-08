@@ -11,26 +11,26 @@ from trainer import Trainer
 from neptune_logger import NeptuneLoggerCallback
 
 # os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
-melspec_feature_mapping = factory_melspec_feature(64, 44100)
+melspec_feature_mapping = factory_melspec_feature(86, 44100)
 voice_dataset = get_dataset(melspec_feature_mapping, 32)
 voice_val_dataset = get_val_dataset(melspec_feature_mapping, 32)
 
 res_block_args = [ 
         # [ [128, 3, 1], [64, 3, 1], [32, 3, 1], [16, 3, 1] ],
-        # [ [128, 3, 1], [64, 3, 1], [64, 3, 1], [32, 3, 1] ],
+        [ [128, 3, 1], [64, 3, 1], [64, 3, 1], [32, 3, 1], [16, 3, 1] ],
         # [ [128, 3, 1], [128, 3, 1], [64, 3, 1], [64, 3, 1], [64, 3, 1], [64, 3, 1], [32, 3, 1], [32, 3, 1] ],
-        [ [64, 3, 1], [32, 3, 1], [16, 3, 1] ]
+        # [ [64, 3, 1], [32, 3, 1], [16, 3, 1] ]
     ]
 
 # model_name = ["smoll networks#1", "medium networks#1", "big_networks#1"]
-model_name = ["resnet_drop_fully", "resnet_drop_conv_ful", "resnet_fully"]
-architectures = [DropoutResnet, DropoutFullConvResnet, SimpleResnet] 
+model_name = [ "resnet_conv_ful", "resnet_fully"]
+architectures = [DropoutFullConvResnet, SimpleResnet] 
 # epochs = [10, 10, 10]
 
 neptune.init('tomasz-adam-skrzypczak/sandbox')
 
 for j in range(len(res_block_args)):
-    for i in range(len(model_name)):
+    for i in range(len(model_name) - 1):
 
         exp_name = model_name[i] + str(int(time.time())) + '_' + str(j)
 
