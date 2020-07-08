@@ -1,3 +1,58 @@
+// Convert an AudioBuffer to a Blob using WAVE representation
+function bufferToWave(abuffer, len) {
+    var numOfChan = abuffer.numberOfChannels,
+        length = len * numOfChan * 2 + 44,
+        buffer = new ArrayBuffer(length),
+        view = new DataView(buffer),
+        channels = [], i, sample,
+        offset = 0,
+        pos = 0;
+
+    // write WAVE header
+    setUint32(0x46464952);                         // "RIFF"
+    setUint32(length - 8);                         // file length - 8
+    setUint32(0x45564157);                         // "WAVE"
+
+    setUint32(0x20746d66);                         // "fmt " chunk
+    setUint32(16);                                 // length = 16
+    setUint16(1);                                  // PCM (uncompressed)
+    setUint16(numOfChan);
+    setUint32(abuffer.sampleRate);
+    setUint32(abuffer.sampleRate * 2 * numOfChan); // avg. bytes/sec
+    setUint16(numOfChan * 2);                      // block-align
+    setUint16(16);                                 // 16-bit (hardcoded in this demo)
+
+    setUint32(0x61746164);                         // "data" - chunk
+    setUint32(length - pos - 4);                   // chunk length
+
+    // write interleaved data
+    for (i = 0; i < abuffer.numberOfChannels; i++)
+        channels.push(abuffer.getChannelData(i));
+
+    while (pos < length) {
+        for (i = 0; i < numOfChan; i++) {             // interleave channels
+            sample = Math.max(-1, Math.min(1, channels[i][offset])); // clamp
+            sample = (0.5 + sample < 0 ? sample * 32768 : sample * 32767) | 0; // scale to 16-bit signed int
+            view.setInt16(pos, sample, true);          // write 16-bit sample
+            pos += 2;
+        }
+        offset++                                     // next source sample
+    }
+
+    // create Blob
+    return new Blob([buffer], {type: "audio/wav"});
+
+    function setUint16(data) {
+        view.setUint16(pos, data, true);
+        pos += 2;
+    }
+
+    function setUint32(data) {
+        view.setUint32(pos, data, true);
+        pos += 4;
+    }
+}
+
 const recordAudio = () =>
     new Promise(async resolve => {
         const stream = await navigator.mediaDevices.getUserMedia({audio: true});
@@ -10,14 +65,6 @@ const recordAudio = () =>
         const start = () => {
             audioChunks = [];
             mediaRecorder.start();
-            // const analyser = Visualizer.audioContext.createAnalyser();
-            // const source = Visualizer.audioContext.createMediaStreamSource(stream);
-            // analyser.fftSize = 2048;
-            // const bufferLength = analyser.frequencyBinCount;
-            // const dataArray = new Uint8Array(bufferLength);
-            // analyser.getByteTimeDomainData(dataArray);
-            // source.connect(analyser);
-            // Visualizer._drawSpectrum(analyser);
         };
 
         const stop = () =>
@@ -29,7 +76,6 @@ const recordAudio = () =>
                     const play = () => audio.play();
                     resolve({audioChunks, audioBlob, audioUrl, play});
                 });
-
                 mediaRecorder.stop();
             });
 
@@ -94,12 +140,58 @@ function startAnalyzeMode() {
 sendButton.addEventListener('click', () => {
     let form_data = new FormData();
     languageLabel.innerText = 'Please wait...';
-    form_data.append('audio', audio.audioBlob, 'speech.wav');
+    if (!filenameLabel.innerText.localeCompare("None")) {
+        let reader1 = new FileReader();
+        reader1.onload = function (ev) {
+            var audioCtx = new (AudioContext || webkitAudioContext)();
+            // Decode audio
+            audioCtx.decodeAudioData(ev.target.result).then(function (buffer) {
+                // Process Audio
+                var offlineAudioCtx = new OfflineAudioContext({
+                    numberOfChannels: 2,
+                    length: 44100 * buffer.duration,
+                    sampleRate: 44100,
+                });
+                // Audio Buffer Source
+                soundSource = offlineAudioCtx.createBufferSource();
+                soundSource.buffer = buffer;
+                compressor = offlineAudioCtx.createDynamicsCompressor();
+                compressor.threshold.setValueAtTime(-20, offlineAudioCtx.currentTime);
+                compressor.knee.setValueAtTime(30, offlineAudioCtx.currentTime);
+                compressor.ratio.setValueAtTime(5, offlineAudioCtx.currentTime);
+                compressor.attack.setValueAtTime(.05, offlineAudioCtx.currentTime);
+                compressor.release.setValueAtTime(.25, offlineAudioCtx.currentTime);
 
-    fetch('/sound_analyze', {method: 'POST', body: form_data, headers: {Accept: "application/json"}}).then(
-        function (response) {
-            response.json().then(data => languageLabel.innerText = data.language)
-        });
+                soundSource.connect(compressor);
+                compressor.connect(offlineAudioCtx.destination);
+                offlineAudioCtx.startRendering().then(function (renderedBuffer) {
+
+                    blob = bufferToWave(renderedBuffer, offlineAudioCtx.length);
+                    form_data.append('audio', blob, 'speech.wav');
+                    fetch('/sound_analyze', {
+                        method: 'POST',
+                        body: form_data,
+                        headers: {Accept: "application/json"}
+                    }).then(
+                        function (response) {
+                            response.json().then(data => languageLabel.innerText = data.language)
+                        });
+
+                })
+            });
+        };
+        reader1.readAsArrayBuffer(audio.audioBlob);
+    } else {
+        form_data.append('audio', audio.audioBlob, 'speech.wav');
+        fetch('/sound_analyze', {
+            method: 'POST',
+            body: form_data,
+            headers: {Accept: "application/json"}
+        }).then(
+            function (response) {
+                response.json().then(data => languageLabel.innerText = data.language)
+            });
+    }
 
 });
 

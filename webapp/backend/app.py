@@ -1,13 +1,23 @@
+import numpy as np
 from flask import Flask, jsonify, render_template, make_response, request
+import requests
+
+from webapp.backend.predict import preprocess
 
 app = Flask(__name__)
 app.config.from_json('flask_config.json', silent=False)
 
+language_list = ["Chinese", "English", "German", "Polish", "Russian"]
+
 
 @app.route("/sound_analyze", methods=["POST"])
 def predict_language():
-    print(request.files)
-    return make_response(jsonify({'language': 'Spanish'}), 200)
+    spectrogram: np.ndarray = preprocess(request.files['audio'])
+    spectrogram: np.ndarray = spectrogram.reshape((1, spectrogram.shape[0], spectrogram.shape[1], 1))
+    input_json: dict = {"instances": spectrogram.tolist()}
+    response: requests.Response = requests.post("http://localhost:8501/v1/models/voice_model:predict", json=input_json)
+    language_index: int = int(np.argmax((response.json()['predictions'][0])))
+    return make_response(jsonify({'language': language_list[language_index]}), 200)
 
 
 @app.route("/", methods=["GET"])
