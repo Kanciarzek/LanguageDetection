@@ -3,7 +3,9 @@ import os
 import numpy as np
 import librosa
 import tensorflow as tf
+import tensorflow_io as tfio
 
+from .augmentation import mask_freq, mask_time
 from sklearn import preprocessing
 
 
@@ -28,7 +30,7 @@ def load_sample(filepath):
     return tf.convert_to_tensor(audio, dtype=tf.float32)
 
 
-def create_dataset(feature_mapping, batch_size, path_dataset = PATH):
+def create_dataset(feature_mapping, batch_size, train = True, path_dataset = PATH):
     dt = tf.data.Dataset.list_files(PATH).cache()
     dt = dt.shuffle(30000, reshuffle_each_iteration=True)
     dt = dt.map(lambda p : 
@@ -37,15 +39,19 @@ def create_dataset(feature_mapping, batch_size, path_dataset = PATH):
     dt = dt.map(lambda sample, label : (
         tf.py_function(feature_mapping, inp=[sample], Tout=[tf.float32]), label),
         num_parallel_calls=AUTOTUNE)
-    dt = dt.map(lambda sample, label: 
-            (tf.squeeze(sample, axis=0), tf.squeeze(label, axis=0)))
-    dt = dt.padded_batch(batch_size, 
-            padded_shapes=([None, None, 1], [])).prefetch(AUTOTUNE)
+    dt = dt.map(lambda sample, label: (tf.squeeze(sample, axis=0), tf.squeeze(label, axis=0)))
+
+    if train:
+        dt = dt.map(lambda sample, label: (mask_freq(sample, 5, 20), label))
+        dt = dt.map(lambda sample, label: (mask_time(sample, 5, 35), label))
+
+    dt = dt.padded_batch(batch_size, padded_shapes=([None, None, 1], [])).prefetch(AUTOTUNE)
     
     return dt
+
 
 def get_val_dataset(feature_mapping, batch_size):
     return create_dataset(feature_mapping, batch_size, VAL_PATH)
 
 def get_dataset(feature_mapping, batch_size):
-    return create_dataset(feature_mapping, batch_size, PATH)
+    return create_dataset(feature_mapping, batch_size, False, PATH)

@@ -24,7 +24,7 @@ class ResnetLayer(tf.keras.layers.Layer):
         x = self.activ_fun(x)
 
         x = self.conv22(x)
-        x = self.norm2(x)
+        x = self.norm2(x, training=training)
         
         channels_in = input_tensor.shape[-1]
         
