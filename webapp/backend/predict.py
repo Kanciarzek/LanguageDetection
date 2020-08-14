@@ -16,8 +16,10 @@ def make_melspec_feature(data):
 
 
 def preprocess(file):
-    audio, sr = load(file)
+    audio, sr = load('audio.wav')
 
     spectrogram = make_melspec_feature(audio)
+    print(spectrogram)
     spectrogram = spectrogram.reshape((NUMBER_OF_MELS, -1))
+    spectrogram = (spectrogram - np.min(spectrogram)) / (np.max(spectrogram) - np.min(spectrogram))
     return spectrogram
