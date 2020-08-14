@@ -15,11 +15,9 @@ def predict_language():
     request.files['audio'].save('audio.wav')
     spectrogram: np.ndarray = preprocess(request.files['audio'])
     spectrogram: np.ndarray = spectrogram.reshape((1, spectrogram.shape[0], spectrogram.shape[1], 1))
-    print(spectrogram)
     input_json: dict = {"instances": spectrogram.tolist()}
     response: requests.Response = requests.post("http://localhost:8501/v1/models/voice_model:predict", json=input_json)
     language_index: int = int(np.argmax((response.json()['predictions'][0])))
-    print(response.json())
     return make_response(jsonify({'language': language_list[language_index]}), 200)
 
 
